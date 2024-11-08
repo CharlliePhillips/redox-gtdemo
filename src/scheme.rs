@@ -1,11 +1,13 @@
+use log::info;
 use redox_scheme::SchemeMut;
 use syscall::{error::*, MODE_CHR};
 
 use crate::Ty;
 
-pub struct GTDemoScheme(pub Ty);
+pub struct GTDemoScheme(pub Ty, pub usize);
 
 impl SchemeMut for GTDemoScheme {
+
     fn open(&mut self, _path: &str, _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
         Ok(0)
     }
@@ -19,16 +21,14 @@ impl SchemeMut for GTDemoScheme {
     }
 
     fn read(&mut self, _file: usize, buf: &mut [u8], _offset: u64, _flags: u32) -> Result<usize> {
-        match self.0 {
-            Ty::GTDemo => {
-                buf.fill(255);
-                Ok(buf.len())
-            }
-        }
+        Ok(self.1)
     }
 
+
+
     fn write(&mut self, _file: usize, buffer: &[u8], _offset: u64, _flags: u32) -> Result<usize> {
-        Ok(buffer.len())
+        self.1 = buffer.len();
+        Ok(self.1)
     }
 
     fn fcntl(&mut self, _id: usize, _cmd: usize, _arg: usize) -> Result<usize> {
